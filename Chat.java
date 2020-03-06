@@ -133,7 +133,23 @@ public class Chat{
                 }
             }
         });
-        leMessage.addActionListener(new ActionListener(){
+        leMessage.addKeyListener(new KeyAdapter(){
+            public void keyPressed(KeyEvent e){
+                if(e.getKeyCode()==KeyEvent.VK_ENTER){
+                    String message = leMessage.getText();
+                    if(!(message.trim().equals(""))){
+                        leMessage.setText("");
+                        int finDeLigne = 1;
+                        try{
+                            finDeLigne = leChat.getLineEndOffset(0);
+                            leChat.replaceRange("", 0, finDeLigne);
+                        } catch(Exception exception){}
+                        leChat.append("\n " + message);
+                    }
+                }
+            }
+        });
+        boutonEnvoyer.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 String message = leMessage.getText();
                 if(!(message.trim().equals(""))){
@@ -190,7 +206,6 @@ public class Chat{
         boiteLesBoites.add(boiteInfoConnexion);
         boiteLesBoites.add(Box.createRigidArea(new Dimension(0, 10)));
         boiteLesBoites.add(boiteLeChat);
-
 
         fenetre.getContentPane().add(boiteLesBoites);
         fenetre.setResizable(false);

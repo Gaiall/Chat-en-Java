@@ -3,7 +3,7 @@ import java.io.*;
 import javax.imageio.*;
 import javax.swing.*;
 
-
+@SuppressWarnings("serial")
 public class Panneau extends JPanel {
     public void paintComponent(Graphics g){
         try {
