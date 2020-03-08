@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.net.*;
+import java.io.*;
 
 public class Chat{
     public static void main(String[] args){
@@ -24,6 +26,8 @@ public class Chat{
         Box boiteInfoConnexion = Box.createVerticalBox();
         Box boiteLeChat = Box.createVerticalBox();
         Box boiteLesBoites = Box.createVerticalBox();
+
+        SocketContainer socketServeurContainer = null;
 
         JTextField zoneDeNom = new JTextField(" nom");
         JTextField zoneDeIP = new JTextField(" adresse");
@@ -82,18 +86,52 @@ public class Chat{
         boutonEnvoyer.setPreferredSize(new Dimension(200, 25));
         zoneDeChat.add(boutonEnvoyer, contrainte);
 
+        //Les comportement des boutons et zone de chat
+        //Lui il connecte
         bouttonConnecter.addActionListener(new ActionListener(){
-            public void actionPerformed(ActionEvent e){
-                String adresseIP = zoneDeIP.getText();
-                String port = zoneDePort.getText();
-                Boolean addresseOK = adresseIP.matches("\\s*\\d{1,3}[.]\\d{1,3}[.]\\d{1,3}[.]\\d{1,3}\\s*");
-                Boolean portOK = port.matches("\\s*\\d{1,4}\\s*");
-                adresseIP = adresseIP.trim();
-                port = port.trim();
-                if(addresseOK && portOK)
-                    System.out.println(adresseIP + ":" + port);
+            public void actionPerformed(ActionEvent event){
+                if(bouttonConnecter.getText() == "Connexion"){
+                    String adresseIP = zoneDeIP.getText();
+                    String port = zoneDePort.getText();
+                    Boolean addresseOK = adresseIP.matches("\\s*\\d{1,3}[.]\\d{1,3}[.]\\d{1,3}[.]\\d{1,3}\\s*");
+                    Boolean portOK = port.matches("\\s*\\d{1,4}\\s*");
+                    adresseIP = adresseIP.trim();
+                    port = port.trim();
+                    if(addresseOK && portOK){
+                        System.out.println(adresseIP + ":" + port);
+                        //La c'est l'endroit ou on connecte
+                        try{
+                            socketServeurContainer.setSocket(new Socket(InetAddress.getByName(adresseIP), Integer.parseInt(port)));
+                        } catch (UnknownHostException e){
+                            System.out.println("Le serveur n'a pas été trouvé.");
+                            JOptionPane.showMessageDialog(fenetre, "Le serveur n'a pas été trouvé.");
+                        } catch (IOException e){
+                            JOptionPane.showMessageDialog(fenetre, "I/O Exception.");
+                        }
+
+                        //une fois connecté on empeche les infos de connection d'etre modifiées
+                        zoneDeNom.setEditable(false);
+                        zoneDeIP.setEditable(false);
+                        zoneDePort.setEditable(false);
+                        //On permet l'utilisation du chat
+                        boutonEnvoyer.setEnabled(true);
+                        leMessage.setEditable(true);
+                        //On en fait un bouton de deconnexion
+                        bouttonConnecter.setText("Deconnexion");
+                    }
+                } else {
+                    //on deconnecte donc on autorise de nouveau de tout changer
+                    zoneDeNom.setEditable(true);
+                    zoneDeIP.setEditable(true);
+                    zoneDePort.setEditable(true);
+                    boutonEnvoyer.setEnabled(false);
+                    leMessage.setEditable(false);
+                    //On en fait un bouton de deconnexion
+                    bouttonConnecter.setText("Connexion");
+                }
             }
         });
+        //Les 3 la c'est de l'esthetique
         zoneDeNom.addFocusListener(new FocusListener(){
             public void focusGained(FocusEvent e){
                 if(zoneDeNom.getText().equals(" nom")){
@@ -133,6 +171,7 @@ public class Chat{
                 }
             }
         });
+        //Eux ca envoie les messages
         leMessage.addKeyListener(new KeyAdapter(){
             public void keyPressed(KeyEvent e){
                 if(e.getKeyCode()==KeyEvent.VK_ENTER){
@@ -166,6 +205,9 @@ public class Chat{
             }
         });
 
+        //On empeche d'utiliser le chat tant qu'on est pas connecté
+        boutonEnvoyer.setEnabled(false);
+        leMessage.setEditable(false);
 
         zoneDeNom.setMaximumSize(new Dimension(100, 20));
         zoneDeIP.setPreferredSize(new Dimension(200, 20));
